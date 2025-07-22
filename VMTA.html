@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PMTA Virtual-MTA Config Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 600;
+            color: #555;
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+        textarea:focus, input:focus, select:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 8px rgba(79,172,254,0.3);
+        }
+        button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        pre {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #333;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>PMTA Virtual-MTA Config Generator</h2>
+    
+    <label>Enter IPs (one per line):</label>
+    <textarea id="ips" rows="6" placeholder="e.g., 23.106.235.70"></textarea>
+    
+    <label>Domain:</label>
+    <input type="text" id="domain" placeholder="e.g., domain.com">
+    
+    <label>Selector:</label>
+    <input type="text" id="selector" placeholder="e.g., key1">
+    
+    <label>PMTA Name:</label>
+    <input type="text" id="hotset" placeholder="e.g., hotset1">
+    
+    <label>Select Path:</label>
+    <select id="path">
+        <option value="select">--Select Path--</option>
+        <option value="/var/pmtadomain-keys/">/var/pmtadomain-keys/</option>
+        <option value="/etc/pmtadomain-keys/">/etc/pmtadomain-keys/</option>
+    </select>
+    
+    <button onclick="generateConfig()">Generate Config</button>
+    
+    <h3>Generated Config:</h3>
+    <pre id="output"></pre>
+</div>
+
+<script>
+function generateConfig() {
+    const ips = document.getElementById('ips').value.trim().split('\n');
+    const domain = document.getElementById('domain').value.trim();
+    const selector = document.getElementById('selector').value.trim();
+    const hotset = document.getElementById('hotset').value.trim();
+    const path = document.getElementById('path').value.trim();
+    
+    if (ips.length === 0 || !domain || !selector || !hotset) {
+        alert('Please fill all fields');
+        return;
+    }
+    
+    let output = '';
+    ips.forEach((ip) => {
+        ip = ip.trim();
+        if(ip) {
+            output += `<virtual-mta ${hotset}_${ip}>\n`;
+            output += `smtp-source-host ${ip} ${hotset}.${domain}\n`;
+            output += `domain-key ${selector},${domain},${path}${selector}.${domain}.pem\n`;
+            output += `</virtual-mta>\n\n`;
+        }
+    });
+    
+    document.getElementById('output').textContent = output;
+}
+</script>
+</body>
+</html>
